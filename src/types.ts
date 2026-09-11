@@ -1,11 +1,8 @@
 export type PageType = 
   | 'overview' 
   | 'map' 
-  | 'automation' 
   | 'exceptions' 
-  | 'analytics' 
-  | 'ai-insights' 
-  | 'reports';
+  | 'ai-insights';
 
 export type RegionId = 
   | 'midwest' 
@@ -45,6 +42,7 @@ export interface LocationData {
   avg_processing_time: number; // in minutes
   cost_impact: number;
   is_hotspot?: boolean;
+  primary_issue?: string;
 }
 
 export interface RegionData {

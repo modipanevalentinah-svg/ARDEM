@@ -202,31 +202,25 @@ export const GisMap: React.FC<GisMapProps> = ({
       let strokeColor = '#ffffff';
       let isHotspotPulse = false;
 
-      if (mapActiveLayer === 'locations') {
-        markerColor = loc.facility_type === 'Distribution Hub' ? '#38bdf8' : '#a855f7';
-        radius = 7;
-      } else if (mapActiveLayer === 'volume') {
+      if (mapActiveLayer === 'activity') {
         // Proportional circle based on volume (4k to 14k)
         radius = Math.max(6, Math.min(18, (loc.active_volume / 14000) * 16));
-        markerColor = '#3b82f6';
+        markerColor = '#38bdf8'; // sky blue
+        strokeColor = '#bae6fd';
+      } else if (mapActiveLayer === 'exceptions') {
+        // Scaled by exception count
+        radius = Math.max(7, Math.min(18, loc.exception_count * 1.5));
+        markerColor = loc.exception_count >= 8 ? '#f97316' : '#f59e0b'; // orange to amber
+        strokeColor = '#ffffff';
       } else if (mapActiveLayer === 'hotspots') {
         if (loc.is_hotspot || loc.exception_count >= 8) {
           markerColor = '#ef4444';
           radius = 12;
           isHotspotPulse = true;
         } else {
-          markerColor = '#64748b';
+          markerColor = '#475569';
           radius = 5;
         }
-      } else if (mapActiveLayer === 'performance') {
-        markerColor = loc.automation_rate >= 96 ? '#10b981' : loc.automation_rate >= 93 ? '#f59e0b' : '#ef4444';
-        radius = 8;
-      } else if (mapActiveLayer === 'cost') {
-        radius = Math.max(6, Math.min(20, (loc.cost_impact / 85000) * 18));
-        markerColor = '#f97316';
-      } else if (mapActiveLayer === 'automation') {
-        markerColor = loc.automation_rate >= 96 ? '#10b981' : '#f59e0b';
-        radius = 7;
       }
 
       // If hotspot pulse, render pulse divIcon

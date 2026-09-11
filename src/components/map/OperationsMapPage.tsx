@@ -1,26 +1,23 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   Layers, 
   MapPin, 
   AlertTriangle, 
   TrendingUp, 
-  DollarSign, 
-  Cpu, 
   Sparkles, 
-  Filter, 
-  Compass, 
-  Maximize2, 
+  ArrowRight, 
   ShieldAlert, 
-  ChevronRight,
-  BarChart3,
-  Eye,
-  Activity,
-  Flame
+  Info,
+  CheckCircle2,
+  Table,
+  Compass,
+  FileSpreadsheet,
+  Globe2
 } from 'lucide-react';
 import { useApp, MapLayerType } from '../../context/AppContext';
 import { GisMap } from './GisMap';
 import { REGIONS_DATA, OPERATIONAL_LOCATIONS } from '../../data/mockData';
-import { RegionId, LocationData } from '../../types';
+import { RegionId } from '../../types';
 
 export const OperationsMapPage: React.FC = () => {
   const { 
@@ -28,31 +25,52 @@ export const OperationsMapPage: React.FC = () => {
     setSelectedRegion, 
     mapActiveLayer, 
     setMapActiveLayer,
-    selectedLocation,
-    setSelectedLocation,
-    navigateTo,
-    setSelectedException,
-    exceptionsList
+    navigateTo
   } = useApp();
 
-  const [spatialTab, setSpatialTab] = useState<'overview' | 'hotspots' | 'cost' | 'risk'>('overview');
-
-  const layers: { id: MapLayerType; label: string; description: string; count?: number }[] = [
-    { id: 'locations', label: '1. Operational Locations', description: 'All 100 enterprise distribution hubs, depots & processing facilities' },
-    { id: 'volume', label: '2. Transaction Volume', description: 'Scaled density circles based on active document throughput' },
-    { id: 'hotspots', label: '3. Exception Hotspots', description: 'Pulsing critical anomaly zones requiring immediate triage', count: 8 },
-    { id: 'performance', label: '4. Regional Performance', description: 'GeoOps composite score centroids across 8 territories' },
-    { id: 'cost', label: '5. Cost Impact', description: 'Geographic concentration of manual audit and exception financial exposure' },
-    { id: 'automation', label: '6. Automation Performance', description: 'Straight-through automation efficiency by operational facility' }
+  // The 3 simplified business-focused map layers
+  const layers: { id: MapLayerType; label: string; description: string; badge?: string }[] = [
+    { 
+      id: 'activity', 
+      label: '1. Operational Activity', 
+      description: 'Shows where transactions and operational throughput are occurring across facilities.' 
+    },
+    { 
+      id: 'exceptions', 
+      label: '2. Exceptions', 
+      description: 'Shows where operational problems and validation failures are occurring.',
+      badge: '127 Total'
+    },
+    { 
+      id: 'hotspots', 
+      label: '3. Hotspots', 
+      description: 'Shows where exceptions are geographically concentrated into high-density clusters.',
+      badge: '8 Hotspots'
+    }
   ];
 
-  const currentRegion = selectedRegion === 'all' ? REGIONS_DATA.midwest : (REGIONS_DATA[selectedRegion] || REGIONS_DATA.midwest);
-  
-  const hotspotsList = OPERATIONAL_LOCATIONS.filter(l => l.is_hotspot || l.exception_count >= 8);
+  // Active region for the side intelligence panel (defaults to Midwest if national)
+  const activeRegionId: RegionId = selectedRegion === 'all' ? 'midwest' : selectedRegion;
+  const currentRegion = REGIONS_DATA[activeRegionId] || REGIONS_DATA.midwest;
+
+  // Filtered operational locations for the active region
+  const regionLocations = OPERATIONAL_LOCATIONS.filter(loc => loc.region === activeRegionId);
+  const primaryTerritories = activeRegionId === 'midwest'
+    ? [
+        { name: 'Chicago Central Logistics Gateway', state: 'IL', exceptions: 16, issue: 'Tabular coordinate displacement' },
+        { name: 'Detroit Automotive Operations Depot', state: 'MI', exceptions: 14, issue: 'Vendor ERP template redesign' },
+        { name: 'Indianapolis Distribution Hub', state: 'IN', exceptions: 8, issue: 'Tariff rate calculation variance' }
+      ]
+    : regionLocations.slice(0, 3).map(loc => ({
+        name: loc.name,
+        state: loc.state,
+        exceptions: loc.exception_count,
+        issue: loc.primary_issue
+      }));
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Header & Spatial Subtitle */}
+      {/* Header & Spatial Navigation */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 border-b border-slate-200 pb-4">
         <div>
           <div className="flex items-center gap-2">
@@ -60,36 +78,47 @@ export const OperationsMapPage: React.FC = () => {
               Operations GIS Intelligence Map
             </h1>
             <span className="rounded bg-slate-900 px-2.5 py-0.5 text-xs font-mono font-bold text-amber-400">
-              ArcGIS & Leaflet Core
+              Centerpiece GIS
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Spatial Intelligence for Automated Business Operations: Visualizing where automation succeeds and where exceptions cluster.
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Question 2: Where is it happening? Visualizing geographic concentration across enterprise facilities.
           </p>
         </div>
 
-        {/* Region Quick Selector Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Territory:</span>
+        {/* Region Selector Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
           <button
             type="button"
             onClick={() => setSelectedRegion('all')}
-            className={`px-2.5 py-1 rounded text-xs font-semibold shrink-0 transition ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0 transition ${
               selectedRegion === 'all' 
-                ? 'bg-slate-900 text-amber-400 font-bold' 
+                ? 'bg-slate-900 text-amber-400 font-bold shadow-xs' 
                 : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
             }`}
           >
-            National (All 8 Regions)
+            All Regions (National)
           </button>
-          {(Object.keys(REGIONS_DATA) as RegionId[]).map(rId => (
+          <button
+            type="button"
+            onClick={() => setSelectedRegion('midwest')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0 transition flex items-center gap-1.5 ${
+              selectedRegion === 'midwest' 
+                ? 'bg-rose-600 text-white font-bold shadow-xs' 
+                : 'bg-white border border-rose-200 text-rose-700 hover:bg-rose-50'
+            }`}
+          >
+            <span className="h-2 w-2 rounded-full bg-rose-500"></span>
+            Midwest (Primary Hotspot)
+          </button>
+          {(['northeast', 'south', 'west'] as RegionId[]).map(rId => (
             <button
               key={rId}
               type="button"
               onClick={() => setSelectedRegion(rId)}
-              className={`px-2.5 py-1 rounded text-xs font-semibold shrink-0 transition ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0 transition ${
                 selectedRegion === rId 
-                  ? 'bg-slate-900 text-amber-400 font-bold' 
+                  ? 'bg-slate-900 text-amber-400 font-bold shadow-xs' 
                   : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
               }`}
             >
@@ -99,303 +128,221 @@ export const OperationsMapPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Interactive Map & Layer Controls Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
-        {/* Layer Controls Sidebar */}
-        <div className="lg:col-span-1 rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-4 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                <Layers className="h-4 w-4 text-slate-600" />
-                <span>GIS Map Layers</span>
-              </span>
-              <span className="text-[10px] font-mono text-slate-400">6 Layers Active</span>
-            </div>
-
-            <div className="mt-3 space-y-2">
-              {layers.map(layer => {
-                const isActive = mapActiveLayer === layer.id;
-                return (
-                  <button
-                    key={layer.id}
-                    type="button"
-                    onClick={() => setMapActiveLayer(layer.id)}
-                    className={`w-full text-left rounded-lg p-2.5 text-xs transition border ${
-                      isActive
-                        ? 'border-amber-500 bg-amber-50/60 shadow-xs ring-1 ring-amber-500/20'
-                        : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className={`font-bold ${isActive ? 'text-amber-950' : 'text-slate-800'}`}>
-                        {layer.label}
-                      </span>
-                      {layer.count && (
-                        <span className="rounded-full bg-rose-500 px-1.5 py-0.2 text-[10px] font-bold text-white">
-                          {layer.count}
-                        </span>
-                      )}
-                    </div>
-                    <p className={`text-[11px] mt-1 leading-snug ${isActive ? 'text-amber-900/80' : 'text-slate-500'}`}>
-                      {layer.description}
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Map Legend / Guidance */}
-          <div className="pt-3 border-t border-slate-100 space-y-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-              Legend & Interaction
-            </span>
-            <div className="space-y-1.5 text-[11px] text-slate-600">
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-rose-500 animate-ping"></span>
-                <span>Pulsing Red: Exception Hotspot</span>
+      {/* Layer Control Bar: EXACTLY 3 SIMPLIFIED BUSINESS LAYERS */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        {layers.map((layer) => {
+          const isActive = mapActiveLayer === layer.id;
+          return (
+            <button
+              key={layer.id}
+              type="button"
+              onClick={() => setMapActiveLayer(layer.id)}
+              className={`text-left rounded-xl p-3.5 border transition flex flex-col justify-between ${
+                isActive 
+                  ? 'border-amber-500 bg-amber-50/50 shadow-xs ring-1 ring-amber-500' 
+                  : 'border-slate-200 bg-white hover:bg-slate-50'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className={`text-xs font-bold ${isActive ? 'text-amber-950' : 'text-slate-800'}`}>
+                  {layer.label}
+                </span>
+                {layer.badge && (
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${
+                    isActive ? 'bg-amber-200 text-amber-900' : 'bg-slate-100 text-slate-600'
+                  }`}>
+                    {layer.badge}
+                  </span>
+                )}
               </div>
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
-                <span>Green: Automation &gt; 96%</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-amber-500"></span>
-                <span>Amber: Automation 93% - 96%</span>
-              </div>
-            </div>
-            <p className="text-[10px] text-slate-400 pt-1">
-              Click any region centroid to fly into that regional territory.
-            </p>
-          </div>
-        </div>
-
-        {/* Central Map Canvas */}
-        <div className="lg:col-span-3 rounded-xl border border-slate-200 bg-white p-2 shadow-xs flex flex-col">
-          <GisMap height="580px" />
-        </div>
+              <p className="text-[11px] text-slate-500 mt-1 leading-snug">
+                {layer.description}
+              </p>
+            </button>
+          );
+        })}
       </div>
 
-      {/* REGIONAL INTELLIGENCE PANEL (Prompt Specification) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Regional Intelligence Card */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs lg:col-span-1 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-            <div>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">
-                REGIONAL INTELLIGENCE PANEL
+      {/* Main Map + Side Intelligence Panel Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        {/* CENTERPIECE GIS MAP (8 Cols) */}
+        <div className="lg:col-span-8 rounded-xl border border-slate-800 bg-slate-950 shadow-md overflow-hidden flex flex-col">
+          {/* Map Status Bar */}
+          <div className="flex items-center justify-between bg-slate-900 px-4 py-2.5 border-b border-slate-800 text-xs">
+            <div className="flex items-center gap-2 text-slate-300">
+              <Compass className="h-4 w-4 text-amber-400" />
+              <span className="font-semibold">Interactive Spatial Canvas</span>
+              <span className="text-slate-500">•</span>
+              <span className="text-amber-400 font-mono">
+                Active Layer: {mapActiveLayer.toUpperCase()}
               </span>
-              <h2 className="text-base font-black text-slate-900 uppercase tracking-tight">
+            </div>
+            <div className="flex items-center gap-3 text-slate-400 text-[11px]">
+              <span className="flex items-center gap-1">
+                <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span>
+                Pulsing Hotspots
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="h-2 w-2 rounded-full bg-sky-400"></span>
+                Active Facilities
+              </span>
+            </div>
+          </div>
+
+          {/* Leaflet Map Component */}
+          <GisMap height="520px" />
+        </div>
+
+        {/* SIDE INTELLIGENCE PANEL: REGIONAL DRILL-DOWN (4 Cols) */}
+        <div className="lg:col-span-4 space-y-4">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+            
+            {/* Panel Header */}
+            <div className="border-b border-slate-100 pb-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
+                  {activeRegionId === 'midwest' ? 'Primary Anomaly Hotspot' : 'Regional Intelligence'}
+                </span>
+                <span className="text-xs font-mono text-slate-400 font-semibold">{currentRegion.code}</span>
+              </div>
+              <h2 className="text-lg font-black tracking-tight text-slate-900 mt-1">
                 {currentRegion.name}
               </h2>
             </div>
-            <div className="text-right">
-              <span className="text-[10px] text-slate-400 block font-medium">Operational Score</span>
-              <span className="text-xl font-black font-mono text-amber-600">
-                {currentRegion.geoops_score} / 100
-              </span>
-            </div>
-          </div>
 
-          {/* Regional KPI Metrics Grid */}
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="rounded-lg bg-slate-50 p-3 border border-slate-200/70">
-              <span className="text-slate-500 text-[11px] block">Transactions</span>
-              <span className="text-sm font-bold text-slate-900 font-mono">
-                {currentRegion.transactions.toLocaleString()}
-              </span>
+            {/* Core Regional Figures */}
+            <div className="grid grid-cols-2 gap-2.5 py-3 border-b border-slate-100">
+              <div className="rounded-lg bg-slate-50 p-2.5">
+                <span className="text-[10px] font-bold uppercase text-slate-500 block">Transactions</span>
+                <span className="text-lg font-black font-mono text-slate-900 block mt-0.5">
+                  {currentRegion.transactions.toLocaleString()}
+                </span>
+              </div>
+              <div className="rounded-lg bg-rose-50 p-2.5 border border-rose-100">
+                <span className="text-[10px] font-bold uppercase text-rose-700 block">Active Exceptions</span>
+                <span className="text-lg font-black font-mono text-rose-900 block mt-0.5">
+                  {currentRegion.exception_count}
+                </span>
+              </div>
             </div>
-            <div className="rounded-lg bg-slate-50 p-3 border border-slate-200/70">
-              <span className="text-slate-500 text-[11px] block">Automation Rate</span>
-              <span className="text-sm font-bold text-emerald-600 font-mono">
-                {currentRegion.automation_rate}%
-              </span>
-            </div>
-            <div className="rounded-lg bg-slate-50 p-3 border border-slate-200/70">
-              <span className="text-slate-500 text-[11px] block">Exceptions</span>
-              <span className="text-sm font-bold text-rose-600 font-mono">
-                {currentRegion.exception_count}
-              </span>
-            </div>
-            <div className="rounded-lg bg-slate-50 p-3 border border-slate-200/70">
-              <span className="text-slate-500 text-[11px] block">Avg Processing Time</span>
-              <span className="text-sm font-bold text-slate-900 font-mono">
-                {currentRegion.avg_processing_time} min
-              </span>
-            </div>
-          </div>
 
-          {/* Cost Impact */}
-          <div className="rounded-lg bg-amber-50/60 p-3 border border-amber-200 text-xs">
-            <span className="text-[11px] font-semibold text-amber-900 block">Estimated Cost Impact</span>
-            <span className="text-lg font-black text-amber-950 font-mono">
-              ${currentRegion.cost_impact.toLocaleString()}
-            </span>
-            <span className="text-[10px] text-amber-800 block mt-0.5">
-              Annualized manual review & variance risk
-            </span>
-          </div>
-
-          {/* AI Recommendation (Prompt Requirement) */}
-          <div className="rounded-lg border border-purple-200 bg-purple-50/50 p-3.5 space-y-1.5 text-xs">
-            <div className="flex items-center gap-1.5 font-bold text-purple-900 text-[11px] uppercase tracking-wider">
-              <Sparkles className="h-3.5 w-3.5 text-purple-600" />
-              <span>AI RECOMMENDATION</span>
-            </div>
-            <p className="text-slate-800 leading-relaxed text-xs">
-              {currentRegion.ai_recommendation}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => navigateTo('exceptions', currentRegion.id)}
-            className="w-full rounded-md bg-slate-900 py-2 text-center text-xs font-semibold text-white hover:bg-slate-800 transition"
-          >
-            Review Regional Exceptions ({currentRegion.exception_count})
-          </button>
-        </div>
-
-        {/* SPATIAL ANALYTICS (Prompt Specification) */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs lg:col-span-2 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-200 pb-3">
-            <div>
-              <h2 className="text-base font-bold text-slate-900">
-                Spatial Analytics & Risk Zones
-              </h2>
-              <p className="text-xs text-slate-500">
-                Exception density, geographic cost concentration, and operational risk factors
+            {/* Highest Recurring Issue */}
+            <div className="py-3 border-b border-slate-100 space-y-1">
+              <span className="text-[11px] font-bold uppercase text-slate-400 tracking-wider block">
+                Highest Recurring Issue
+              </span>
+              <p className="text-xs font-bold text-slate-900">
+                {activeRegionId === 'midwest' 
+                  ? 'Supplier Documentation Mismatch' 
+                  : currentRegion.primary_pattern}
               </p>
             </div>
 
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-md text-xs font-semibold text-slate-600">
-              <button
-                type="button"
-                onClick={() => setSpatialTab('overview')}
-                className={`px-2.5 py-1 rounded transition ${spatialTab === 'overview' ? 'bg-white text-slate-900 shadow-xs' : 'hover:text-slate-900'}`}
-              >
-                Hotspots
-              </button>
-              <button
-                type="button"
-                onClick={() => setSpatialTab('cost')}
-                className={`px-2.5 py-1 rounded transition ${spatialTab === 'cost' ? 'bg-white text-slate-900 shadow-xs' : 'hover:text-slate-900'}`}
-              >
-                Cost Concentration
-              </button>
-              <button
-                type="button"
-                onClick={() => setSpatialTab('risk')}
-                className={`px-2.5 py-1 rounded transition ${spatialTab === 'risk' ? 'bg-white text-slate-900 shadow-xs' : 'hover:text-slate-900'}`}
-              >
-                Risk Zones
-              </button>
-            </div>
-          </div>
-
-          {/* Tab 1: Hotspots table */}
-          {spatialTab === 'overview' && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-xs text-slate-500">
-                <span>Identified Operational Hotspot Facilities ({hotspotsList.length} Active)</span>
-                <span className="font-medium text-rose-600">74% of Critical Exceptions Origin</span>
-              </div>
-              <div className="divide-y divide-slate-100 rounded-lg border border-slate-200 overflow-hidden text-xs">
-                {hotspotsList.map(hotspot => (
-                  <div key={hotspot.location_id} className="p-3 bg-white hover:bg-slate-50 flex items-center justify-between gap-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 text-rose-600 font-bold text-xs shrink-0 mt-0.5">
-                        <Flame className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <div className="font-bold text-slate-900">{hotspot.name}</div>
-                        <div className="text-slate-500 text-[11px]">{hotspot.city}, {hotspot.state} • {hotspot.territory}</div>
-                      </div>
+            {/* Geographic Pattern */}
+            <div className="py-3 border-b border-slate-100 space-y-2">
+              <span className="text-[11px] font-bold uppercase text-slate-400 tracking-wider block">
+                Geographic Pattern
+              </span>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Exceptions are concentrated across three operational territories:
+              </p>
+              <div className="space-y-1.5 pt-1">
+                {primaryTerritories.map((t) => (
+                  <div key={t.name} className="flex items-center justify-between text-xs rounded-md bg-slate-50 p-2">
+                    <div className="flex items-center gap-1.5 truncate">
+                      <MapPin className="h-3.5 w-3.5 text-rose-500 shrink-0" />
+                      <span className="font-semibold text-slate-800 truncate">{t.name}</span>
                     </div>
-                    <div className="flex items-center gap-4 text-right shrink-0">
-                      <div>
-                        <span className="text-[10px] text-slate-400 block">Exceptions</span>
-                        <span className="font-mono font-bold text-rose-600">{hotspot.exception_count}</span>
-                      </div>
-                      <div>
-                        <span className="text-[10px] text-slate-400 block">Cost Exposure</span>
-                        <span className="font-mono font-bold text-amber-700">${hotspot.cost_impact.toLocaleString()}</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedLocation(hotspot)}
-                        className="rounded border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
-                      >
-                        Inspect
-                      </button>
-                    </div>
+                    <span className="font-mono font-bold text-rose-600 shrink-0 ml-2">
+                      {t.exceptions} ex
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
-          )}
 
-          {/* Tab 2: Cost Concentration */}
-          {spatialTab === 'cost' && (
-            <div className="space-y-3">
-              <div className="rounded-lg bg-slate-50 p-4 border border-slate-200 text-xs space-y-3">
-                <div className="flex items-center justify-between font-bold text-slate-900">
-                  <span>Geographic Cost Concentration Matrix</span>
-                  <span className="text-amber-700 font-mono">$727,000 Total National Exposure</span>
-                </div>
-                <div className="space-y-2">
-                  {[
-                    { region: 'Northeast Region', cost: 210000, pct: 28.9, factor: 'Unit tariff variance ($48.20/batch)' },
-                    { region: 'Midwest Region', cost: 184000, pct: 25.3, factor: 'Supplier invoice coordinate shifts' },
-                    { region: 'West Region', cost: 148000, pct: 20.4, factor: 'Environmental manifest multi-pass latency' },
-                    { region: 'Southeast Region', cost: 58000, pct: 8.0, factor: 'Intermodal freight demurrage audit' },
-                    { region: 'Mid-Atlantic Region', cost: 51000, pct: 7.0, factor: 'Federal contract FAR compliance checks' },
-                    { region: 'South Region', cost: 42000, pct: 5.8, factor: 'Lowest regional cost exposure' }
-                  ].map((row, idx) => (
-                    <div key={idx} className="space-y-1">
-                      <div className="flex justify-between text-[11px]">
-                        <span className="font-semibold text-slate-800">{row.region}</span>
-                        <span className="font-mono font-bold text-slate-900">${row.cost.toLocaleString()} ({row.pct}%)</span>
-                      </div>
-                      <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden">
-                        <div 
-                          className="h-full bg-amber-500 rounded-full" 
-                          style={{ width: `${row.pct}%` }}
-                        />
-                      </div>
-                      <span className="text-[10px] text-slate-400 block">{row.factor}</span>
-                    </div>
-                  ))}
-                </div>
+            {/* AI Insight */}
+            <div className="py-3 border-b border-slate-100 space-y-1">
+              <div className="flex items-center gap-1 text-xs font-bold text-amber-900">
+                <Sparkles className="h-3.5 w-3.5 text-amber-600" />
+                <span>AI Insight</span>
               </div>
+              <p className="text-xs text-slate-600 leading-relaxed italic bg-amber-50/50 p-2.5 rounded-lg border border-amber-200">
+                "The geographic concentration of similar exceptions suggests a recurring regional process or supplier-related issue rather than isolated processing errors."
+              </p>
             </div>
-          )}
 
-          {/* Tab 3: Risk Zones */}
-          {spatialTab === 'risk' && (
-            <div className="space-y-3 text-xs">
-              <div className="rounded-lg border border-rose-200 bg-rose-50/40 p-3.5 space-y-2">
-                <div className="flex items-center gap-2 font-bold text-rose-900">
-                  <ShieldAlert className="h-4 w-4 text-rose-600" />
-                  <span>ZONE 1: Great Lakes Industrial Manufacturing Corridor</span>
-                </div>
-                <p className="text-slate-700 leading-relaxed text-[11px]">
-                  High concentration of automotive component suppliers (Detroit, Cleveland, Chicago). High risk of unearned vendor discount forfeiture due to tabular parsing shifts.
+            {/* Recommended Action & CTA */}
+            <div className="pt-3 space-y-3">
+              <div>
+                <span className="text-[11px] font-bold uppercase text-slate-400 tracking-wider block">
+                  Recommended Action
+                </span>
+                <p className="text-xs font-semibold text-slate-800 mt-0.5">
+                  Review the supplier documentation workflow affecting this operational region.
                 </p>
               </div>
-              <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-3.5 space-y-2">
-                <div className="flex items-center gap-2 font-bold text-amber-900">
-                  <ShieldAlert className="h-4 w-4 text-amber-600" />
-                  <span>ZONE 2: Tri-State Municipal Utility Territory</span>
-                </div>
-                <p className="text-slate-700 leading-relaxed text-[11px]">
-                  Complex regulatory surcharge changes (NY/NJ PSC addendums). Automated invoices defaulting to manual queue due to uncataloged tariff lines.
-                </p>
-              </div>
+
+              <button
+                type="button"
+                onClick={() => navigateTo('exceptions', activeRegionId)}
+                className="w-full flex items-center justify-center gap-2 rounded-lg bg-slate-900 py-2.5 px-4 text-xs font-bold text-amber-400 shadow-xs hover:bg-slate-800 transition"
+              >
+                <span>DRILL INTO EXCEPTION INTELLIGENCE</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
             </div>
-          )}
+
+          </div>
+        </div>
+
+      </div>
+
+      {/* WHY LOCATION MATTERS: Spatial Intelligence vs Flat Spreadsheet */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="h-2 w-2 rounded-full bg-amber-500"></span>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">
+            Why Location Matters: Turning Data into Decisions
+          </h3>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+          {/* Flat Spreadsheet View */}
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <div className="flex items-center gap-2 text-slate-700 font-bold text-xs pb-2 border-b border-slate-200">
+              <FileSpreadsheet className="h-4 w-4 text-slate-400" />
+              <span>Flat Spreadsheet / Standard ERP Table</span>
+            </div>
+            <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+              In a flat tabular list, 127 individual exception rows appear as random, disconnected statistical noise. 
+              Operators treat each error as an isolated manual data-entry mistake, spending hours re-typing numbers without identifying systemic vendor defects.
+            </p>
+            <div className="mt-3 rounded bg-white p-2 text-[11px] font-mono text-slate-500 border border-slate-200 space-y-1">
+              <div>Row 1042: EX-8821 • Invoice format mismatch • $4,840</div>
+              <div>Row 1043: EX-8822 • Line item missing • $3,210</div>
+              <div>Row 1044: EX-8823 • Tax calculation variance • $2,100</div>
+            </div>
+          </div>
+
+          {/* GIS Spatial View */}
+          <div className="rounded-lg border border-amber-300 bg-amber-50/40 p-4">
+            <div className="flex items-center gap-2 text-amber-950 font-bold text-xs pb-2 border-b border-amber-200">
+              <Globe2 className="h-4 w-4 text-amber-600" />
+              <span>ARDEM GIS Spatial Intelligence Layer</span>
+            </div>
+            <p className="text-xs text-slate-700 mt-2 leading-relaxed">
+              Projecting automated transactions onto a geographic canvas instantly reveals that <strong>68% of recurring failures cluster into three specific industrial territories</strong> in the Midwest. 
+              This immediately isolates a single root cause: a modified supplier invoice layout rather than manual worker error.
+            </p>
+            <div className="mt-3 rounded bg-white p-2 text-[11px] font-mono text-amber-900 border border-amber-200 font-bold">
+              ✓ Pinpoints supplier ERP coordinate shift across Detroit, Chicago, and Indianapolis
+            </div>
+          </div>
         </div>
       </div>
+
     </div>
   );
 };

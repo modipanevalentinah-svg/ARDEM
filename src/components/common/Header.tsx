@@ -27,21 +27,30 @@ export const Header: React.FC = () => {
   const getPageTitle = () => {
     switch (activePage) {
       case 'overview':
-        return 'Executive Overview';
+        return 'Overview';
       case 'map':
-        return 'GIS Operations Map';
-      case 'automation':
-        return 'Automation Command Center';
+        return 'Operations Map';
       case 'exceptions':
         return 'Exception Intelligence';
-      case 'analytics':
-        return 'Operational Analytics & BI';
       case 'ai-insights':
-        return 'GeoOps Intelligence Assistant';
-      case 'reports':
-        return 'Executive Reports Center';
+        return 'AI Operational Assistant';
       default:
         return 'ARDEM GeoOps Intelligence';
+    }
+  };
+
+  const getPageSubtitle = () => {
+    switch (activePage) {
+      case 'overview':
+        return 'WHAT is happening across national automated operations';
+      case 'map':
+        return 'WHERE exceptions are occurring geographically';
+      case 'exceptions':
+        return 'WHY recurring patterns emerge & WHAT to do';
+      case 'ai-insights':
+        return 'WHAT ACTION operations should take';
+      default:
+        return 'From Automated Data to Location-Aware Decisions';
     }
   };
 
@@ -68,23 +77,23 @@ export const Header: React.FC = () => {
             <h1 className="text-base sm:text-lg font-bold tracking-tight text-slate-900">
               {getPageTitle()}
             </h1>
-            <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 border border-emerald-200">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              Live Engine
+            <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 border border-slate-200">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+              Concept Demo
             </span>
           </div>
           <p className="hidden md:block text-xs text-slate-500">
-            Spatial Intelligence for Automated Business Operations
+            {getPageSubtitle()}
           </p>
         </div>
       </div>
 
       {/* Center/Right: Simulated Data Banner + Global Region Selector + Actions */}
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* Simulated Demo pill */}
-        <div className="hidden xl:flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800" title="Simulated environment demonstration">
-          <span className="h-2 w-2 rounded-full bg-amber-500"></span>
-          <span>Simulated Data Demo</span>
+        {/* Independent Concept Disclaimer pill */}
+        <div className="hidden xl:flex items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-600" title="Independent concept demonstration using simulated data. Not an official ARDEM product.">
+          <span className="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+          <span>Independent Concept • Simulated Data</span>
         </div>
 
         {/* Global Region Filter Dropdown */}

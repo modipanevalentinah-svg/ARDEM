@@ -1,552 +1,368 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
-  TrendingUp, 
-  TrendingDown, 
+  Building, 
   Cpu, 
   AlertTriangle, 
-  Clock, 
-  DollarSign, 
   MapPin, 
-  Sparkles, 
   ArrowRight, 
-  CheckCircle2, 
-  Layers, 
-  Compass,
-  Building,
-  Info
+  TrendingUp, 
+  TrendingDown, 
+  Sparkles,
+  Info,
+  CheckCircle2,
+  Layers,
+  ChevronRight,
+  ShieldAlert
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { GisMap } from '../map/GisMap';
-import { REGIONS_DATA, EXCEPTIONS_DATA } from '../../data/mockData';
-import { RegionId } from '../../types';
+import { REGIONS_DATA } from '../../data/mockData';
 
 export const OverviewPage: React.FC = () => {
   const { 
-    selectedRegion, 
-    setSelectedRegion, 
     aggregateStats, 
     navigateTo, 
-    openException = () => {}, 
-    setSelectedException,
-    currentRegionData
+    setSelectedRegion 
   } = useApp();
 
-  // If a region is selected, use that region; otherwise showcase Midwest as the interactive showcase default or national
-  const displayRegion = currentRegionData || REGIONS_DATA.midwest;
+  // Monthly trend data for Section 1: Transactions vs Exceptions
+  const trendData = [
+    { month: 'Apr', transactions: 38200, exceptions: 84, rate: 95.8 },
+    { month: 'May', transactions: 40100, exceptions: 89, rate: 95.6 },
+    { month: 'Jun', transactions: 41500, exceptions: 92, rate: 95.4 },
+    { month: 'Jul', transactions: 42900, exceptions: 98, rate: 95.1 },
+    { month: 'Aug', transactions: 43400, exceptions: 114, rate: 94.9 },
+    { month: 'Sep (Current)', transactions: 42492, exceptions: 127, rate: 94.7 }
+  ];
 
-  const handleInvestigateMidwest = () => {
-    const mwEx = EXCEPTIONS_DATA.find(e => e.exception_id === 'EX-MW-8821');
-    if (mwEx) {
-      setSelectedException(mwEx);
-    } else {
-      navigateTo('exceptions', 'midwest');
-    }
-  };
+  const [activeMonthIndex, setActiveMonthIndex] = useState<number>(5);
+  const activeMonth = trendData[activeMonthIndex];
 
-  const handleViewMidwestMap = () => {
+  const handleExploreMap = () => {
+    setSelectedRegion('midwest');
     navigateTo('map', 'midwest', { layer: 'hotspots' });
   };
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-200 pb-4">
+      {/* Executive Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200 pb-4">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
-              Good morning, Operations Team
+              Operational Overview
             </h1>
-            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-mono font-medium text-slate-600 border border-slate-200">
-              Enterprise Dashboard
+            <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700 border border-slate-200">
+              Question 1: What is happening?
             </span>
           </div>
-          <p className="text-sm text-slate-500 mt-1">
-            Real-time visibility into automated business operations and geographic performance.
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            High-level executive summary of automated business data throughput and geographic exception patterns.
           </p>
         </div>
 
-        {/* Simulated disclaimer flag */}
-        <div className="flex items-center gap-1.5 self-start sm:self-auto rounded-md bg-amber-50 px-3 py-1.5 text-xs text-amber-800 border border-amber-200">
-          <Info className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-          <span className="font-medium">All figures represent simulated demonstration data</span>
+        {/* Independent Concept Disclaimer */}
+        <div className="flex items-center gap-1.5 self-start sm:self-auto rounded-md bg-slate-100 px-3 py-1.5 text-xs text-slate-600 border border-slate-200">
+          <Info className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+          <span>Independent Concept Demonstration • Simulated Data</span>
         </div>
       </div>
 
-      {/* TOP KPI ROW (Exact values from prompt) */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {/* KPI 1 */}
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+      {/* TOP KPI SECTION: Exactly 4 Clear KPIs */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* KPI 1: Transactions Processed */}
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-slate-300">
           <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs font-semibold">Transactions Processed</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Transactions Processed</span>
             <Building className="h-4 w-4 text-slate-400" />
           </div>
-          <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-xl font-bold font-mono tracking-tight text-slate-900">
+          <div className="mt-3">
+            <span className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-slate-900">
               {aggregateStats.totalTransactions.toLocaleString()}
             </span>
           </div>
           <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
             <TrendingUp className="h-3 w-3" />
-            <span>+12.4% vs previous period</span>
+            <span>+12.4% operational throughput</span>
           </div>
         </div>
 
-        {/* KPI 2 */}
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+        {/* KPI 2: Automation Rate */}
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-slate-300">
           <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs font-semibold">Automation Rate</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Automation Rate</span>
             <Cpu className="h-4 w-4 text-emerald-500" />
           </div>
-          <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-xl font-bold font-mono tracking-tight text-slate-900">
+          <div className="mt-3">
+            <span className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-slate-900">
               {aggregateStats.automationRate}%
             </span>
           </div>
           <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
-            <TrendingUp className="h-3 w-3" />
-            <span>+3.2% vs target</span>
+            <CheckCircle2 className="h-3 w-3" />
+            <span>Target: 95.0% (Near optimal)</span>
           </div>
         </div>
 
-        {/* KPI 3 */}
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs font-semibold">Active Exceptions</span>
-            <AlertTriangle className="h-4 w-4 text-amber-500" />
+        {/* KPI 3: Active Exceptions */}
+        <div className="rounded-xl border border-amber-200 bg-amber-50/40 p-5 shadow-xs transition hover:border-amber-300">
+          <div className="flex items-center justify-between text-amber-800">
+            <span className="text-xs font-bold uppercase tracking-wider">Active Exceptions</span>
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
           </div>
-          <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-xl font-bold font-mono tracking-tight text-slate-900">
+          <div className="mt-3">
+            <span className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-amber-950">
               {aggregateStats.activeExceptions}
             </span>
           </div>
-          <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
-            <TrendingDown className="h-3 w-3" />
-            <span>-18% reduction</span>
+          <div className="mt-1 flex items-center gap-1 text-[11px] font-bold text-amber-700">
+            <TrendingUp className="h-3 w-3" />
+            <span>+29.6% increase over last 60 days</span>
           </div>
         </div>
 
-        {/* KPI 4 */}
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs font-semibold">Geographic Hotspots</span>
-            <MapPin className="h-4 w-4 text-rose-500" />
+        {/* KPI 4: Geographic Hotspots */}
+        <div className="rounded-xl border border-rose-200 bg-rose-50/40 p-5 shadow-xs transition hover:border-rose-300">
+          <div className="flex items-center justify-between text-rose-800">
+            <span className="text-xs font-bold uppercase tracking-wider">Geographic Hotspots</span>
+            <MapPin className="h-4 w-4 text-rose-600" />
           </div>
-          <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-xl font-bold font-mono tracking-tight text-slate-900">
+          <div className="mt-3">
+            <span className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-rose-950">
               {aggregateStats.hotspotCount}
             </span>
           </div>
-          <div className="mt-1 flex items-center gap-1 text-[11px] font-bold text-rose-600">
-            <span>Requires attention</span>
-          </div>
-        </div>
-
-        {/* KPI 5 */}
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs font-semibold">Avg Processing Time</span>
-            <Clock className="h-4 w-4 text-slate-400" />
-          </div>
-          <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-xl font-bold font-mono tracking-tight text-slate-900">
-              {aggregateStats.avgProcessingTime} min
-            </span>
-          </div>
-          <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
-            <TrendingDown className="h-3 w-3" />
-            <span>-22% faster</span>
-          </div>
-        </div>
-
-        {/* KPI 6 */}
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs font-semibold">Operational Savings</span>
-            <DollarSign className="h-4 w-4 text-amber-500" />
-          </div>
-          <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-xl font-bold font-mono tracking-tight text-slate-900">
-              {aggregateStats.savings}
-            </span>
-          </div>
-          <div className="mt-1 flex items-center gap-1 text-[11px] font-medium text-slate-500">
-            <span>Annualized estimate</span>
+          <div className="mt-1 flex items-center gap-1 text-[11px] font-bold text-rose-700">
+            <span>Requires spatial triage (Top: Midwest)</span>
           </div>
         </div>
       </div>
 
-      {/* SECTION A & SECTION B: Operational Performance & Automation Performance */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* SECTION A: Operational Performance Trends */}
-        <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-5 shadow-xs flex flex-col justify-between">
+      {/* OVERVIEW CONTENT: THREE MAJOR SECTIONS */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* SECTION 1: Operational Trend (Transactions vs Exceptions) */}
+        <div className="lg:col-span-6 rounded-xl border border-slate-200 bg-white p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-sm font-bold text-slate-900">
-                  Operational Performance
+                <span className="text-[11px] font-mono font-bold uppercase text-slate-400">Section 1</span>
+                <h2 className="text-base font-bold text-slate-900">
+                  Operational Trend: Transactions vs. Exceptions
                 </h2>
-                <p className="text-xs text-slate-500">
-                  Transaction volume trend, automation rate, and manual review rate over the last 6 months
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Assessing whether exception activity is increasing or decreasing relative to automated volume
                 </p>
               </div>
-              <div className="flex items-center gap-3 text-xs font-medium">
-                <span className="flex items-center gap-1.5 text-slate-700">
-                  <span className="h-2.5 w-2.5 rounded-sm bg-slate-900"></span> Volume
-                </span>
-                <span className="flex items-center gap-1.5 text-slate-700">
-                  <span className="h-2.5 w-2.5 rounded-sm bg-emerald-500"></span> Automation Rate
-                </span>
-                <span className="flex items-center gap-1.5 text-slate-700">
-                  <span className="h-2.5 w-2.5 rounded-sm bg-rose-400"></span> Manual Review
-                </span>
-              </div>
+              <span className="rounded-full bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-700 border border-rose-200 flex items-center gap-1">
+                <TrendingUp className="h-3.5 w-3.5" />
+                Exceptions Increasing
+              </span>
             </div>
 
-            {/* Custom SVG Data Visualization */}
+            {/* Custom SVG Dual-Metric Visualizer */}
             <div className="mt-6">
-              <div className="h-48 w-full">
-                <svg viewBox="0 0 600 160" className="h-full w-full overflow-visible">
-                  {/* Grid lines */}
-                  <line x1="0" y1="30" x2="600" y2="30" stroke="#f1f5f9" strokeDasharray="3 3" />
-                  <line x1="0" y1="70" x2="600" y2="70" stroke="#f1f5f9" strokeDasharray="3 3" />
-                  <line x1="0" y1="110" x2="600" y2="110" stroke="#f1f5f9" strokeDasharray="3 3" />
-                  <line x1="0" y1="150" x2="600" y2="150" stroke="#e2e8f0" />
+              <div className="flex items-center justify-between text-xs text-slate-500 pb-2 border-b border-slate-100">
+                <div className="flex items-center gap-4">
+                  <span className="flex items-center gap-1.5 font-medium text-slate-700">
+                    <span className="h-2.5 w-2.5 rounded-xs bg-slate-800"></span>
+                    Transactions (Volume)
+                  </span>
+                  <span className="flex items-center gap-1.5 font-medium text-rose-600">
+                    <span className="h-2.5 w-2.5 rounded-xs bg-rose-500"></span>
+                    Exceptions (Climbing)
+                  </span>
+                </div>
+                <span className="text-[11px] text-slate-400">Hover bar to inspect month</span>
+              </div>
 
-                  {/* Volume Bars */}
-                  {[
-                    { month: 'Apr', vol: 32000, height: 75, x: 30, auto: 91.2, rev: 8.8 },
-                    { month: 'May', vol: 36500, height: 90, x: 130, auto: 92.4, rev: 7.6 },
-                    { month: 'Jun', vol: 39800, height: 105, x: 230, auto: 93.1, rev: 6.9 },
-                    { month: 'Jul', vol: 43200, height: 118, x: 330, auto: 93.9, rev: 6.1 },
-                    { month: 'Aug', vol: 46800, height: 132, x: 430, auto: 94.4, rev: 5.6 },
-                    { month: 'Sep (YTD)', vol: 49492, height: 142, x: 530, auto: 94.7, rev: 5.3 }
-                  ].map((bar, idx) => (
-                    <g key={idx}>
-                      {/* Bar for volume */}
-                      <rect
-                        x={bar.x - 18}
-                        y={150 - bar.height}
-                        width="36"
-                        height={bar.height}
-                        rx="4"
-                        fill="#0f172a"
-                        opacity="0.85"
-                      />
-                      {/* Automation trend point */}
-                      <circle
-                        cx={bar.x}
-                        cy={150 - (bar.auto * 1.35)}
-                        r="4"
-                        fill="#10b981"
-                        stroke="#ffffff"
-                        strokeWidth="2"
-                      />
-                      {/* Month label */}
-                      <text
-                        x={bar.x}
-                        y="165"
-                        textAnchor="middle"
-                        fontSize="10"
-                        fill="#64748b"
-                        fontWeight="600"
-                      >
-                        {bar.month}
-                      </text>
-                    </g>
-                  ))}
+              {/* Bar & Trend Chart */}
+              <div className="mt-4 grid grid-cols-6 gap-2 sm:gap-3 h-48 items-end pt-6">
+                {trendData.map((item, idx) => {
+                  const isSelected = idx === activeMonthIndex;
+                  const maxVolume = 50000;
+                  const volumeHeightPct = (item.transactions / maxVolume) * 100;
+                  const maxEx = 140;
+                  const exHeightPct = (item.exceptions / maxEx) * 100;
 
-                  {/* Trend line connecting automation rates */}
-                  <path
-                    d="M 30,27 L 130,25 L 230,24 L 330,23 L 430,22 L 530,22"
-                    fill="none"
-                    stroke="#10b981"
-                    strokeWidth="2"
-                    strokeDasharray="4 2"
-                  />
-                </svg>
+                  return (
+                    <div 
+                      key={item.month}
+                      onMouseEnter={() => setActiveMonthIndex(idx)}
+                      onClick={() => setActiveMonthIndex(idx)}
+                      className={`group relative flex flex-col items-center h-full justify-end cursor-pointer rounded-lg p-1 transition ${
+                        isSelected ? 'bg-slate-50 ring-1 ring-slate-300' : 'hover:bg-slate-50/50'
+                      }`}
+                    >
+                      {/* Bar Group: Volume (slate) & Exceptions (rose) */}
+                      <div className="w-full flex items-end justify-center gap-1 sm:gap-1.5 h-36">
+                        {/* Transaction Volume Bar */}
+                        <div 
+                          className="w-1/2 rounded-t transition-all bg-slate-800 group-hover:bg-slate-700"
+                          style={{ height: `${volumeHeightPct}%` }}
+                          title={`${item.transactions.toLocaleString()} Transactions`}
+                        ></div>
+                        {/* Exception Bar */}
+                        <div 
+                          className={`w-1/2 rounded-t transition-all ${
+                            idx >= 4 ? 'bg-rose-500 group-hover:bg-rose-600' : 'bg-amber-400 group-hover:bg-amber-500'
+                          }`}
+                          style={{ height: `${exHeightPct}%` }}
+                          title={`${item.exceptions} Exceptions`}
+                        ></div>
+                      </div>
+
+                      {/* Month Label */}
+                      <span className={`mt-2 text-[11px] font-semibold ${isSelected ? 'text-slate-900 font-bold' : 'text-slate-500'}`}>
+                        {item.month.replace(' (Current)', '')}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>Straight-through volume grew 54% over 6 months</span>
-            <button 
+          {/* Trend Insight Footer */}
+          <div className="mt-4 rounded-lg bg-slate-50 p-3 border border-slate-200 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-slate-700">
+                Selected Period: <strong className="text-slate-900 font-mono">{activeMonth.month}</strong>
+              </span>
+              <span className="font-mono text-slate-600">
+                Volume: <strong>{activeMonth.transactions.toLocaleString()}</strong> • Exceptions: <strong className="text-rose-600">{activeMonth.exceptions}</strong>
+              </span>
+            </div>
+            <p className="text-slate-500 mt-1 text-[11px]">
+              {activeMonthIndex >= 4 
+                ? '⚠️ Sharp exception acceleration detected. While transaction volume expanded 2.3%, exception occurrences surged +29.6% due to regional supplier formatting mismatches.'
+                : 'Operational automation rate remained stable above 95.4% during this baseline quarter.'}
+            </p>
+          </div>
+        </div>
+
+        {/* SECTION 2: Geographic Exception Snapshot (Interactive Map Preview) */}
+        <div className="lg:col-span-6 rounded-xl border border-slate-200 bg-white p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-[11px] font-mono font-bold uppercase text-slate-400">Section 2</span>
+                <h2 className="text-base font-bold text-slate-900">
+                  Geographic Exception Snapshot
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Interactive preview illustrating spatial variance between normal operations and critical anomaly zones
+                </p>
+              </div>
+              <span className="rounded bg-slate-900 px-2 py-0.5 text-xs font-mono font-semibold text-amber-400">
+                GIS Preview
+              </span>
+            </div>
+
+            {/* Visual Status Legend */}
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-800 border border-emerald-200">
+                <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
+                Normal Areas (South, PNW, SW, SE)
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-800 border border-amber-200">
+                <span className="h-2 w-2 rounded-full bg-amber-500"></span>
+                Emerging Areas (West, Mid-Atlantic)
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-md bg-rose-50 px-2 py-1 text-[11px] font-semibold text-rose-800 border border-rose-200">
+                <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span>
+                Critical Hotspots (Midwest, Northeast)
+              </span>
+            </div>
+
+            {/* Map Preview Container */}
+            <div className="mt-3 overflow-hidden rounded-lg border border-slate-800 bg-slate-950">
+              <GisMap height="240px" isMiniPreview={true} />
+            </div>
+          </div>
+
+          {/* Section 2 CTA: EXPLORE GEOGRAPHIC PATTERNS */}
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <span className="text-xs text-slate-500">
+              Interactive Leaflet GIS map with 100 enterprise facilities
+            </span>
+            <button
               type="button"
-              onClick={() => navigateTo('analytics')}
-              className="font-semibold text-slate-900 hover:text-amber-600 flex items-center gap-1 transition"
+              onClick={handleExploreMap}
+              className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-xs font-bold text-amber-400 shadow-xs hover:bg-slate-800 transition"
             >
-              <span>Explore Analytics</span>
+              <span>EXPLORE GEOGRAPHIC PATTERNS</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>
 
-        {/* SECTION B: Automation Performance (Donut chart & Rates) */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs flex flex-col justify-between">
-          <div>
-            <h2 className="text-sm font-bold text-slate-900">
-              Automation Performance
-            </h2>
-            <p className="text-xs text-slate-500">
-              Current ingestion distribution and straight-through reliability
-            </p>
-
-            {/* Donut representation */}
-            <div className="mt-4 flex items-center justify-center">
-              <div className="relative flex h-36 w-36 items-center justify-center">
-                <svg className="h-full w-full -rotate-90" viewBox="0 0 36 36">
-                  {/* Background track */}
-                  <path
-                    className="text-slate-100"
-                    strokeWidth="3.8"
-                    stroke="currentColor"
-                    fill="none"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  />
-                  {/* Manual Review slice (5.3%) */}
-                  <path
-                    className="text-amber-500"
-                    strokeDasharray="5.3, 100"
-                    strokeWidth="3.8"
-                    strokeLinecap="round"
-                    stroke="currentColor"
-                    fill="none"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  />
-                  {/* Automated slice (94.7%) */}
-                  <path
-                    className="text-slate-900"
-                    strokeDasharray="94.7, 100"
-                    strokeDashoffset="-5.3"
-                    strokeWidth="3.8"
-                    strokeLinecap="round"
-                    stroke="currentColor"
-                    fill="none"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  />
-                </svg>
-                <div className="absolute flex flex-col items-center justify-center text-center">
-                  <span className="text-2xl font-black font-mono tracking-tight text-slate-900">
-                    94.7%
-                  </span>
-                  <span className="text-[10px] uppercase font-bold text-emerald-600">
-                    Automated
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Metrics Breakdown */}
-            <div className="mt-4 space-y-2 text-xs">
-              <div className="flex items-center justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-600 flex items-center gap-1.5 font-medium">
-                  <span className="h-2 w-2 rounded-full bg-slate-900"></span> Fully Automated
+        {/* SECTION 3: KEY OPERATIONAL INSIGHT (Prominent Intelligence Card) */}
+        <div className="lg:col-span-12 rounded-xl border-2 border-amber-300 bg-gradient-to-r from-amber-50/80 via-white to-amber-50/50 p-6 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div className="space-y-3 max-w-3xl">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-900 border border-amber-300">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-700" />
+                  KEY OPERATIONAL INSIGHT
                 </span>
-                <span className="font-bold text-slate-900 font-mono">94.7% (235,416)</span>
-              </div>
-              <div className="flex items-center justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-600 flex items-center gap-1.5 font-medium">
-                  <span className="h-2 w-2 rounded-full bg-amber-500"></span> Manual Review
+                <span className="text-xs text-slate-500 font-mono">
+                  Synthesized across 248,592 transactions
                 </span>
-                <span className="font-bold text-amber-700 font-mono">5.3% (13,176)</span>
-              </div>
-              <div className="flex items-center justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-600">Straight-Through Processing (STP)</span>
-                <span className="font-bold text-emerald-700 font-mono">91.2%</span>
-              </div>
-              <div className="flex items-center justify-between py-1">
-                <span className="text-slate-600">Document Extraction Accuracy</span>
-                <span className="font-bold text-emerald-700 font-mono">99.4%</span>
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => navigateTo('automation')}
-            className="mt-3 w-full rounded-md border border-slate-200 bg-slate-50 py-2 text-center text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
-          >
-            View Automation Pipeline
-          </button>
-        </div>
-      </div>
-
-      {/* SECTION C: Geographic Operations Snapshot (Interactive GIS Map Preview + Live Intelligence Panel) */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-slate-900">
-                Geographic Operations Snapshot
-              </h2>
-              <span className="rounded bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-900">
-                Interactive GIS
-              </span>
-            </div>
-            <p className="text-xs text-slate-500">
-              Select any regional badge on the map or click below to update the spatial intelligence panel.
-            </p>
-          </div>
-
-          {/* Region Quick Selector buttons */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            {Object.values(REGIONS_DATA).map(reg => (
-              <button
-                key={reg.id}
-                type="button"
-                onClick={() => setSelectedRegion(reg.id)}
-                className={`rounded px-2 py-1 text-[11px] font-semibold transition ${
-                  selectedRegion === reg.id
-                    ? 'bg-slate-900 text-amber-400 font-bold'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                {reg.name.replace(' Region', '')}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Map and Regional Panel Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          {/* Map Preview Container */}
-          <div className="lg:col-span-2">
-            <GisMap height="400px" isMiniPreview={true} />
-          </div>
-
-          {/* Regional Intelligence Panel (Prompt Midwest example default) */}
-          <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-4 flex flex-col justify-between">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                <div>
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
-                    Regional Intelligence
-                  </span>
-                  <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">
-                    {displayRegion.name}
-                  </h3>
-                </div>
-                <div className="text-right">
-                  <span className="text-[10px] text-slate-400 block">GeoOps Score</span>
-                  <span className="text-base font-bold font-mono text-amber-600">
-                    {displayRegion.geoops_score} / 100
-                  </span>
-                </div>
               </div>
 
-              {/* Data Grid */}
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="rounded bg-white p-2.5 border border-slate-200/80">
-                  <span className="text-slate-500 text-[11px] block">Transactions</span>
-                  <span className="font-bold text-slate-900 font-mono">
-                    {displayRegion.transactions.toLocaleString()}
-                  </span>
-                </div>
-                <div className="rounded bg-white p-2.5 border border-slate-200/80">
-                  <span className="text-slate-500 text-[11px] block">Automation Rate</span>
-                  <span className="font-bold text-emerald-600 font-mono">
-                    {displayRegion.automation_rate}%
-                  </span>
-                </div>
-                <div className="rounded bg-white p-2.5 border border-slate-200/80">
-                  <span className="text-slate-500 text-[11px] block">Exceptions</span>
-                  <span className="font-bold text-rose-600 font-mono">
-                    {displayRegion.exception_count}
-                  </span>
-                </div>
-                <div className="rounded bg-white p-2.5 border border-slate-200/80">
-                  <span className="text-slate-500 text-[11px] block">Cost Impact</span>
-                  <span className="font-bold text-amber-700 font-mono">
-                    ${displayRegion.cost_impact.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-
-              {/* AI Insight Box */}
-              <div className="rounded-lg border border-purple-200 bg-purple-50/50 p-3 space-y-1">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-purple-900">
-                  <Sparkles className="h-3.5 w-3.5 text-purple-600" />
-                  <span>AI Insight</span>
-                </div>
-                <p className="text-[11px] text-slate-700 leading-relaxed">
-                  {displayRegion.ai_insight}
+              <div>
+                <h3 className="text-lg sm:text-xl font-black tracking-tight text-slate-900">
+                  GEOGRAPHIC EXCEPTION PATTERN DETECTED
+                </h3>
+                <p className="text-sm font-medium text-slate-700 mt-1 leading-relaxed">
+                  <strong>68% of recurring exceptions</strong> are concentrated across three operational regions. 
+                  This suggests that the issue is associated with regional workflows or supplier processes rather than isolated processing incidents.
                 </p>
               </div>
+
+              {/* Data Breakdown Badges */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                <div className="rounded-lg bg-white p-3 border border-amber-200 shadow-xs">
+                  <span className="text-[11px] font-bold text-rose-700 block uppercase">Primary Hotspot</span>
+                  <span className="text-sm font-black text-slate-900 block">Midwest Region (38 Exceptions)</span>
+                  <span className="text-xs text-slate-500 block mt-0.5">Recurring Supplier Documentation Mismatch</span>
+                </div>
+                <div className="rounded-lg bg-white p-3 border border-slate-200 shadow-xs">
+                  <span className="text-[11px] font-bold text-amber-700 block uppercase">Secondary Pattern</span>
+                  <span className="text-sm font-black text-slate-900 block">Northeast Region (37 Exceptions)</span>
+                  <span className="text-xs text-slate-500 block mt-0.5">Utility Tariff Variance & Cost Exposure</span>
+                </div>
+                <div className="rounded-lg bg-white p-3 border border-slate-200 shadow-xs">
+                  <span className="text-[11px] font-bold text-slate-700 block uppercase">Tertiary Pattern</span>
+                  <span className="text-sm font-black text-slate-900 block">West Region (14 Exceptions)</span>
+                  <span className="text-xs text-slate-500 block mt-0.5">State Compliance Document Latency</span>
+                </div>
+              </div>
             </div>
 
-            {/* Drilldown button */}
-            <div className="pt-3 border-t border-slate-200 mt-3">
+            {/* Section 3 CTA: VIEW ON MAP */}
+            <div className="flex flex-col sm:flex-row md:flex-col items-stretch sm:items-center md:items-end justify-center gap-3 shrink-0">
               <button
                 type="button"
-                onClick={() => navigateTo('map', displayRegion.id)}
-                className="w-full flex items-center justify-center gap-1.5 rounded-md bg-slate-900 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition"
+                onClick={handleExploreMap}
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-amber-500 px-5 py-3 text-sm font-bold text-slate-950 shadow-md hover:bg-amber-400 transition"
               >
-                <Compass className="h-3.5 w-3.5 text-amber-400" />
-                <span>Open GIS Full Map for {displayRegion.name.replace(' Region', '')}</span>
+                <span>VIEW ON MAP</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => navigateTo('exceptions', 'midwest')}
+                className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-950 transition"
+              >
+                <span>Examine Exception Root Cause</span>
+                <ChevronRight className="h-3.5 w-3.5" />
               </button>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* SECTION D: AI OPERATIONAL INSIGHT (Premium Intelligence Card from Prompt) */}
-      <div className="rounded-xl border-2 border-amber-400/80 bg-gradient-to-r from-amber-500/10 via-amber-50/60 to-white p-5 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 text-white text-xs font-bold">
-                <Sparkles className="h-3.5 w-3.5" />
-              </span>
-              <h3 className="text-xs font-black uppercase tracking-wider text-amber-900">
-                AI OPERATIONAL INSIGHT
-              </h3>
-              <span className="rounded bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-800 uppercase">
-                High Priority
-              </span>
-            </div>
-
-            <p className="text-sm font-semibold text-slate-900">
-              A recurring exception pattern has been detected across multiple Midwest operational territories.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
-              <div>
-                <span className="font-bold uppercase tracking-wider text-slate-500 text-[10px]">
-                  LIKELY CAUSE:
-                </span>
-                <p className="font-medium text-slate-800">
-                  Supplier documentation inconsistencies (Atlas Hydraulic Parts & Midwest Power format shift).
-                </p>
-              </div>
-              <div>
-                <span className="font-bold uppercase tracking-wider text-slate-500 text-[10px]">
-                  POTENTIAL IMPACT:
-                </span>
-                <p className="font-bold text-rose-600 font-mono">
-                  $184,000 annually across 38 queued transactions.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons strictly from Prompt */}
-          <div className="flex items-center gap-2 shrink-0 self-start md:self-center">
-            <button
-              type="button"
-              onClick={handleInvestigateMidwest}
-              className="rounded-md bg-amber-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-amber-700 transition"
-            >
-              Investigate Pattern
-            </button>
-            <button
-              type="button"
-              onClick={handleViewMidwestMap}
-              className="rounded-md border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-800 hover:bg-slate-50 transition"
-            >
-              View Map
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );

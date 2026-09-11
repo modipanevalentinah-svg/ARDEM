@@ -17,12 +17,9 @@ import {
 } from '../data/mockData';
 
 export type MapLayerType = 
-  | 'locations' 
-  | 'volume' 
-  | 'hotspots' 
-  | 'performance' 
-  | 'cost' 
-  | 'automation';
+  | 'activity' 
+  | 'exceptions' 
+  | 'hotspots';
 
 interface NotificationToast {
   id: string;
@@ -90,7 +87,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [selectedException, setSelectedException] = useState<ExceptionData | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
   const [selectedReport, setSelectedReport] = useState<ExecutiveReport | null>(null);
-  const [mapActiveLayer, setMapActiveLayer] = useState<MapLayerType>('locations');
+  const [mapActiveLayer, setMapActiveLayer] = useState<MapLayerType>('hotspots');
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   const [mobileNavOpen, setMobileNavOpen] = useState<boolean>(false);
   const [settingsOpen, setSettingsOpen] = useState<boolean>(false);
@@ -167,13 +164,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return REGIONS_DATA[selectedRegion] || null;
   }, [selectedRegion]);
 
+  // Count how many exceptions have been resolved in this session
+  const resolvedCount = useMemo(() => {
+    return exceptionsList.filter(e => e.resolution_status === 'Resolved').length;
+  }, [exceptionsList]);
+
   // Aggregate stats dynamically calculating based on region selection
   const aggregateStats = useMemo(() => {
     if (selectedRegion === 'all') {
       return {
         totalTransactions: 248592,
         automationRate: 94.7,
-        activeExceptions: exceptionsList.filter(e => e.resolution_status !== 'Resolved').length,
+        activeExceptions: Math.max(0, 127 - resolvedCount),
         hotspotCount: 8,
         avgProcessingTime: 2.8,
         costImpact: 727000,
@@ -183,20 +185,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     const reg = REGIONS_DATA[selectedRegion];
-    const regExceptions = exceptionsList.filter(e => e.region === selectedRegion && e.resolution_status !== 'Resolved');
-    const hotspots = OPERATIONAL_LOCATIONS.filter(l => l.region === selectedRegion && l.is_hotspot).length;
+    const regResolved = exceptionsList.filter(e => e.region === selectedRegion && e.resolution_status === 'Resolved').length;
+    const baseExceptions = reg ? reg.exception_count : 0;
+    const hotspots = selectedRegion === 'midwest' ? 3 : (OPERATIONAL_LOCATIONS.filter(l => l.region === selectedRegion && (l.is_hotspot || l.exception_count >= 8)).length || 1);
 
     return {
       totalTransactions: reg ? reg.transactions : 0,
       automationRate: reg ? reg.automation_rate : 94.0,
-      activeExceptions: regExceptions.length,
+      activeExceptions: Math.max(0, baseExceptions - regResolved),
       hotspotCount: hotspots,
       avgProcessingTime: reg ? reg.avg_processing_time : 2.8,
       costImpact: reg ? reg.cost_impact : 50000,
       savings: `$${((reg ? reg.transactions : 10000) * 0.0074).toFixed(2)}M`,
       geoopsScore: reg ? reg.geoops_score : 80
     };
-  }, [selectedRegion, exceptionsList]);
+  }, [selectedRegion, resolvedCount, exceptionsList]);
 
   return (
     <AppContext.Provider

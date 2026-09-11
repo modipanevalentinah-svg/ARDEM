@@ -44,7 +44,7 @@ export const Sidebar: React.FC = () => {
       id: 'overview',
       label: 'Overview',
       icon: LayoutDashboard,
-      description: 'Executive Performance'
+      description: 'What is happening?'
     },
     {
       id: 'map',
@@ -52,43 +52,23 @@ export const Sidebar: React.FC = () => {
       icon: MapIcon,
       badge: 'GIS',
       badgeColor: 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
-      description: 'Spatial Intelligence'
-    },
-    {
-      id: 'automation',
-      label: 'Automation',
-      icon: Cpu,
-      badge: `${aggregateStats.automationRate}%`,
-      badgeColor: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
-      description: 'Pipeline & Ingestion'
+      description: 'Where is it happening?'
     },
     {
       id: 'exceptions',
-      label: 'Exceptions',
+      label: 'Exception Intelligence',
       icon: AlertTriangle,
-      badge: aggregateStats.activeExceptions,
+      badge: 127,
       badgeColor: 'bg-rose-500/20 text-rose-300 border border-rose-500/30',
-      description: 'Root Cause & Resolution'
-    },
-    {
-      id: 'analytics',
-      label: 'Analytics',
-      icon: BarChart3,
-      description: 'GeoOps Score & BI'
+      description: 'Why is it happening?'
     },
     {
       id: 'ai-insights',
       label: 'AI Insights',
       icon: Sparkles,
-      badge: 'Assistant',
-      badgeColor: 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
-      description: 'Spatial Intelligence Copilot'
-    },
-    {
-      id: 'reports',
-      label: 'Reports',
-      icon: FileText,
-      description: 'Executive Briefings'
+      badge: 'Advisor',
+      badgeColor: 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30',
+      description: 'What action to take?'
     }
   ];
 
@@ -96,7 +76,7 @@ export const Sidebar: React.FC = () => {
     <div className="flex h-full flex-col justify-between bg-[#0b1320] text-slate-300">
       {/* Brand Header */}
       <div>
-        <div className="flex h-16 items-center justify-between border-b border-slate-800/80 px-4">
+        <div className="flex h-20 items-center justify-between border-b border-slate-800/80 px-4">
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 shadow-md shadow-amber-900/30 text-white font-black text-sm">
               <Compass className="h-5 w-5 animate-spin-slow" />
@@ -104,10 +84,13 @@ export const Sidebar: React.FC = () => {
             {!sidebarCollapsed && (
               <div className="flex flex-col min-w-0">
                 <span className="text-xs font-bold uppercase tracking-wider text-amber-400 font-mono">
-                  ARDEM
+                  ARDEM GeoOps
                 </span>
-                <span className="text-sm font-bold tracking-tight text-white truncate">
-                  GeoOps Intelligence
+                <span className="text-xs font-bold tracking-tight text-white truncate">
+                  Exception Intelligence
+                </span>
+                <span className="text-[10px] text-slate-400 truncate">
+                  Concept Demonstration
                 </span>
               </div>
             )}
