@@ -1,0 +1,6 @@
+{
+  "name": "ARDEM GeoOps Intelligence",
+  "description": "Spatial Intelligence for Automated Business Operations - Enterprise Operations & GIS Intelligence Platform",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
